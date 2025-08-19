@@ -1,0 +1,137 @@
+---
+title: "lobster exploration"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+```{r}
+data <- read_csv(here::here("data", "Lobster_Abundance_All_Years_20210412.csv"), na = c("-99999", ""))
+```
+
+```{r}
+data <- clean_names(data) %>%
+  uncount(count)
+```
+
+```{r}
+mean_carapace <- data %>% 
+  group_by(year, site) %>%
+  summarise(mean = mean(size_mm, na.rm = TRUE), total_lobster = n())
+print(mean_carapace)
+```
+
+```{r}
+ggplot(data = mean_carapace, aes(x = year, y = total_lobster, color = site)) + geom_line() + facet_wrap(~site)
+```
+
+```{r}
+data1 <- data %>%
+  filter(year == 2020)
+  
+```
+
+```{r}
+ legal_lobster <- data1 %>% 
+  mutate(legal = 
+  case_when(size_mm <= 79.76 ~ "No",
+            size_mm > 79.76 ~ "Yes")) %>%
+  group_by(site, legal) %>%
+  summarise(total_lobster = n())
+   
+
+```
+
+
+```{r}
+ggplot(data = legal_lobster, aes(x= site, y= total_lobster), position = "fill" ) + geom_col(aes(fill = legal), position = "fill")
+```
+
+
+#Task 3
+```{r}
+data <- read_csv(here::here("data", "Lobster_Abundance_All_Years_20210412.csv"), na = c("-99999", ""))
+
+lobsters <- clean_names(data) %>%
+  uncount(count)
+
+
+```
+
+```{r}
+lobsters <- clean_names(data) %>%
+  uncount(count)
+```
+
+
+```{r}
+ex_a <- lobsters %>%
+  filter(site == "IVEE" | site == "CARP" | site == "NAPL")
+  
+```
+
+
+```{r}
+ex_a <- lobsters %>%
+  filter(month == 8)
+```
+
+```{r}
+ex_a70 <- ex_a %>% 
+  filter(site == "AQUE")
+   
+ex_a70 <- ex_a %>% 
+  filter( size_mm > 70)
+```
+
+```{r}
+ex_a <- lobsters %>%
+  filter(!site == "NAPL")
+```
+
+# group_by() %>% summarize() practice
+
+```{r}
+ex_a <- lobsters %>% 
+  group_by(site) %>%
+  summarise(mean = mean(size_mm, na.rm = TRUE), sd = sd(size_mm, na.rm = TRUE))
+
+ex_a <- lobsters %>% 
+  group_by(site, month) %>%
+  summarise(max = max(size_mm, na.rm = TRUE))
+
+```
+
+#mutate() practice
+```{r}
+ex_a <- lobsters %>% 
+  mutate(size_cm = size_mm / 10 ) %>%
+  mutate(tolower(site)) %>%
+  mutate(area = as.character(area))
+```
+
+```{r}
+mpa_lobsters <- lobsters |> 
+  mutate(designation = case_when(site %in% c("IVEE", "NAPL") ~ "MPA", # If true, assign "MPA"
+                                 TRUE ~ "not MPA")) # Catch-all; will assign to anything that wasn’t assigned earlier
+  
+
+
+```
+
+```{r}
+ex_a <- lobsters %>% 
+  mutate(size_bin = 
+  case_when(size_mm <= 70 ~ "Small",
+            size_mm > 70 ~ "Large")) %>%
+  mutate(designation = 
+  case_when(site == "IVEE" | site == "NAPL" ~ "MPA",
+            site != "IVEE" & site != "NAPL" ~ "not MPA"))
+
+```
+
